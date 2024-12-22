@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zoom Preview</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .img_container {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .img_card {
+            width: 400px;
+            height: 400px;
+            position: relative;
+        }
+
+        img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            z-index: 1;
+        }
+
+        .hover_direction {
+            width: 100px;
+            height: 100px;
+            position: absolute;
+            top: 0;
+            left: 0;
+            background-color: rgba(0, 132, 255, 0.26);
+            z-index: 999;
+            display: none;
+        }
+
+        .hover_effect {
+            width: 400px;
+            height: 400px;
+            position: relative;
+            overflow: hidden;
+            border: 2px solid #ddd;
+            display: none;
+            position: absolute;
+            top: 10px;
+            right: 10px;
+        }
+
+        #hover_effect_img {
+            width: 1600px; /* Zoomed size */
+            height: 1600px; /* Zoomed size */
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="img_container">
+        <div class="img_card">
+            <img src="./kettle.jpg" alt="kettle">
+            <div class="hover_direction"></div>
+        </div>
+        <div class="hover_effect" id="effect_container">
+            <img id="hover_effect_img" src="" alt="">
+        </div>
+    </div>
+    <script>
+        const img_cards = document.querySelectorAll(".img_card");
+        const hover_directions = document.querySelectorAll(".hover_direction");
+        const effect_container =  document.getElementById("effect_container");
+
+        img_cards.forEach((card, i) => {
+            const hoverElement = hover_directions[i];
+            const hoverEffectImg = document.getElementById("hover_effect_img");
+            //* Get the image src inside the current card
+            const img = card.querySelector("img");
+            const imgSrc = img ? img.src : "";
+
+            card.addEventListener("mousemove", function (e) {
+                //* Get the bounding rectangle of the current card
+                const rect = card.getBoundingClientRect();
+
+                //* Calculate the relative position within the card
+                let x = e.clientX - rect.left - hoverElement.offsetWidth / 2;
+                let y = e.clientY - rect.top - hoverElement.offsetHeight / 2;
+
+                //* Constrain position within the boundaries of the card
+                x = Math.max(0, Math.min(x, rect.width - hoverElement.offsetWidth));
+                y = Math.max(0, Math.min(y, rect.height - hoverElement.offsetHeight));
+
+                //* Update hover_direction position
+                hoverElement.style.left = `${x}px`;
+                hoverElement.style.top = `${y}px`;
+
+                //* Calculate position for zoom effect
+                const zoomX = (x / rect.width) * hoverEffectImg.offsetWidth;
+                const zoomY = (y / rect.height) * hoverEffectImg.offsetHeight;
+
+                hoverEffectImg.style.left = `-${zoomX}px`;
+                hoverEffectImg.style.top = `-${zoomY}px`;
+            });
+
+            //* Mouse enter event
+            card.addEventListener("mouseenter", function () {
+                hoverElement.style.display = "block"; // Show the hover direction element
+                if (imgSrc.trim() !== "") {
+                    effect_container.style.display="block";
+                    hoverEffectImg.src = imgSrc; // Set the zoom preview image
+                }
+            });
+
+            //* Mouse leave event
+            card.addEventListener("mouseleave", function () {
+                hoverElement.style.display = "none"; // Hide the hover direction element
+                hoverEffectImg.src = ""; // Clear the zoom preview image
+                effect_container.style.display="none";
+            });
+        });
+    </script>
+</body>
+</html>
